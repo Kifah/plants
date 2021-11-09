@@ -4,7 +4,6 @@ import * as AWS from 'aws-sdk';
 declare const process: {
     env: {
         AWS_APPCONFIG_PLANT_NAME: string; // enviornment in AppConfig Application
-        AWS_APPCONFIG_APP_NAME: string; // name in AppConfig Application
     };
 };
 
@@ -14,8 +13,9 @@ export const handler = (
         event: any
     ): any => {
         const callParams = {
-            Application: process.env.AWS_APPCONFIG_APP_NAME,
-            Configuration: process.env.AWS_APPCONFIG_PLANT_NAME + 'DefaultConfig',
+            // the AppConfig Application has been created manually, and could be accessed by all stacks
+            Application: 'PlantAppConfigApplication',
+            Configuration: 'DefaultConfig',
             Environment: process.env.AWS_APPCONFIG_PLANT_NAME,
             ClientId: createClientId()
         };
