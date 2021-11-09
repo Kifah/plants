@@ -22,13 +22,22 @@ export const handler = (
 
         // debug call to list all applications
         appConfig.getConfiguration(callParams, function (err, data) {
+            const content=data.Content?.toString() as string;
+            const plantConfig = JSON.parse(content);
             console.log('application data...');
             if (err) console.log(err, err.stack);
-            else console.log(data.Content?.toString());
+            else {
+
+                if (plantConfig.horizontalIntegration==false){
+                    console.log('ejecting...cannot use horizontalIntegration service');
+                } else {
+                    console.log('wait....making complicated horizontalIntegration API call here....');
+                }
+            }
         });
 
+
         console.log('debugging plants configuration...');
-        console.log('application name', process.env.AWS_APPCONFIG_APP_NAME);
         console.log('application env', process.env.AWS_APPCONFIG_PLANT_NAME);
     }
 ;

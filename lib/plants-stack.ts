@@ -11,7 +11,7 @@ export class PlantsStack extends cdk.Stack {
         // the AppConfig Application has been created manually, and could be accessed by all stacks
         const appConfigApplicationName = 'PlantAppConfigApplication';
 
-        const fallbackPlantName = process.env.CONFIGURED_PLANT || 'neckarsulm';
+        const plantName = process.env.CONFIGURED_PLANT || 'neckarsulm';
 
 
         const plantInformationLambda = new lambda.Function(this, "plantInformation", {
@@ -19,11 +19,8 @@ export class PlantsStack extends cdk.Stack {
             code: lambda.Code.fromAsset('lambda'),
             handler: 'plantinformation.handler',
             environment: {
-                AWS_APPCONFIG_EXTENSION_HTTP_PORT: '2772',
-                AWS_APPCONFIG_EXTENSION_POLL_INTERVAL_SECONDS: '45',
-                AWS_APPCONFIG_EXTENSION_POLL_TIMEOUT_MILLIS: '3000',
                 AWS_APPCONFIG_APP_NAME: appConfigApplicationName,
-                AWS_APPCONFIG_PLANT_NAME: fallbackPlantName,
+                AWS_APPCONFIG_PLANT_NAME: plantName,
             }
         });
 
