@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple Demo for multi plant
+Parameters:
+  Plant:
+    Type: String
+    Default: neckarsulm
+    AllowedValues:
+      - neckarsulm
+      - wolfsburg
+      - osnabrueck
+Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName:
+        Ref: Plant
+  ApiFunction: # Adds a GET api endpoints at "/" to the ApiGatewayApi via an Api event
+    Type: AWS::Serverless::Function
+    Properties:
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+      Environment:
+        Variables:
+          appEnv:
+            Ref: Plant
+      Policies:
+        - Statement:
+            - Sid: GetConfig
+              Effect: Allow
+              Action:
+                - appconfig:GetConfiguration
+              Resource: !Sub 'arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:*'
+            - Sid: ReadS3
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:ListBucketVersions
+              Resource: !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*'
+            - Sid: WriteLogs
+              Effect: Allow
+              Action:
+                - logs:CreateLogStream
+                - logs:CreateLogGroup
+                - logs:PutLogEvents
+              Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+      Runtime: nodejs12.x
+      Handler: index.handler
+      InlineCode: |
+        exports.handler = async (event) => {
+          let result = getPlantParams();
+          let appEnv = process.env.appEnv;
+          const response = {
+            statusCode: 200,
+            body: JSON.stringify(result),
+          };
+          return response;
+        };
+
+        function getPlantParams() {
+          return [
+            {
+              name: 'AWS AppConfig'
+            },
+            {
+              name: 'Amazon SageMaker Studio'
+            },
+            {
+              name: 'Amazon Kendra'
+            },
+            {
+              name: 'Amazon CodeGuru'
+            },
+            {
+              name: 'Amazon Fraud Detector'
+            },
+            {
+              name: 'Amazon EKS on AWS Fargate'
+            },
+            {
+              name: 'AWS Outposts'
+            },
+            {
+              name: 'AWS Wavelength'
+            },
+            {
+              name: 'AWS Transit Gateway'
+            },
+            {
+              name: 'Amazon Detective'
+            }
+          ];
+        }
+Outputs:
+  APIGateway:
+    Description: The API Gateway exposing your testing app
+    Value: !Sub "https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/${Plant}"
