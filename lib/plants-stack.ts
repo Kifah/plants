@@ -1,5 +1,4 @@
 import * as cdk from '@aws-cdk/core';
-import * as appconfig from '@aws-cdk/aws-appconfig';
 import * as lambda from '@aws-cdk/aws-lambda';
 import {CfnParameter} from "@aws-cdk/core";
 import {Effect, PolicyStatement} from '@aws-cdk/aws-iam';
@@ -10,14 +9,10 @@ export class PlantsStack extends cdk.Stack {
         super(scope, id, props);
 
         // the AppConfig Application has been created manually, and could be accessed by all stacks
-        const appConfigApplicationName='PlantAppConfigApplication';
+        const appConfigApplicationName = 'PlantAppConfigApplication';
 
-        // This should be provided during manual deployment or through CI/CID
-        const plantNameParameter = new CfnParameter(this, "plantName", {
-            type: "String",
-            allowedValues: ['neckarsulm', 'wolfsburg', 'osnabrueck'],
-            description: "The name of the plant to be deployed."
-        });
+        const fallbackPlantName = process.env.CONFIGURED_PLANT || 'neckarsulm';
+
 
         const plantInformationLambda = new lambda.Function(this, "plantInformation", {
             runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
@@ -28,7 +23,7 @@ export class PlantsStack extends cdk.Stack {
                 AWS_APPCONFIG_EXTENSION_POLL_INTERVAL_SECONDS: '45',
                 AWS_APPCONFIG_EXTENSION_POLL_TIMEOUT_MILLIS: '3000',
                 AWS_APPCONFIG_APP_NAME: appConfigApplicationName,
-                AWS_APPCONFIG_PLANT_NAME: plantNameParameter.value.toString(),
+                AWS_APPCONFIG_PLANT_NAME: fallbackPlantName,
             }
         });
 
